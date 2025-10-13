@@ -2,18 +2,25 @@
 
 describe('Sign In page', () => {
   it('should provide an ability to log in', () => {
-    // Otwórz stronę logowania
-    cy.visit('https://react-redux.realworld.io/#/login');
+    const primaryUrl = 'https://react-redux.realworld.io';
+    const backupUrl = 'https://conduit.mate.academy';
 
-    // Wypełnij email i hasło
-    cy.get('input[type="email"]').type('joannakoloczek1@gmail.com');
-    cy.get('input[type="password"]').type('Szczurojeb55!');
+    function visitLogin(url) {
+      cy.visit(`${url}/#/login`, { failOnStatusCode: false }).then(($resp) => {
+        if ($resp.status === 404 && url === primaryUrl) {
+          visitLogin(backupUrl);
+        }
+      });
+    }
 
-    // Kliknij przycisk Sign In
-    cy.get('button[type="submit"]').click();
+    visitLogin(primaryUrl);
 
-    // Sprawdź, czy username pojawił się w nagłówku
-    cy.get('nav.navbar').contains('jo').should('be.visible');
+    cy.get('input[type="email"]').type(Cypress.env('USER_EMAIL'));
+    cy.get('input[type="password"]').type(Cypress.env('USER_PASSWORD'));
+
+    cy.contains('button', 'Sign in').click();
+
+    cy.get('nav').contains('a', Cypress.env('USER_NAME')).should('be.visible');
   });
 });
 

@@ -25,11 +25,17 @@ describe('Sign In page', () => {
     cy.get('input[type="email"]').type(Cypress.env('USER_EMAIL'));
     cy.get('input[type="password"]').type(Cypress.env('USER_PASSWORD'));
 
+    // Przechwytujemy request logowania, aby poczekać na odpowiedź
+    cy.intercept('POST', '**/users/login').as('loginRequest');
+
     // Kliknij przycisk Sign in
     cy.contains('button', 'Sign in').click();
 
-    // Sprawdź, czy username pojawił się w nagłówku
-    cy.get('nav').contains('a', Cypress.env('USER_NAME')).should('be.visible');
+    // Czekaj na zakończenie requestu logowania
+    cy.wait('@loginRequest');
+
+    // Sprawdź, czy username pojawił się w nagłówku po zalogowaniu
+    cy.get('nav').contains('a', Cypress.env('USER_NAME'), { timeout: 10000 }).should('be.visible');
   });
 });
 
